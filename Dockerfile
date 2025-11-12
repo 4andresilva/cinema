@@ -26,25 +26,32 @@ RUN apt-get update && apt-get install -y \
         zip \
     && rm -rf /var/lib/apt/lists/*
 
-# Remove o default.conf padrão do Nginx
-RUN rm -f /etc/nginx/conf.d/default.conf
+# Remove TODOS os arquivos de configuração padrão do Nginx
+RUN rm -f /etc/nginx/sites-enabled/default \
+    && rm -f /etc/nginx/sites-available/default \
+    && rm -f /etc/nginx/conf.d/*.conf
 
 # Instala Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
+# Copia o default.conf ANTES da aplicação
+COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+
 # Copia aplicação
 COPY . .
+
+# Ajusta permissões
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage \
+    && chmod -R 755 /var/www/bootstrap/cache
 
 # Instala dependências Laravel e cacheia config/rotas/views
 RUN composer install --no-dev --optimize-autoloader \
     && php artisan config:cache \
     && php artisan route:cache \
     && php artisan view:cache
-
-# Copia o default.conf personalizado
-COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
