@@ -42,10 +42,10 @@ COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 # Copia aplicação
 COPY . .
 
-# Cria o arquivo .env se não existir (copie do .env.example)
+# Cria o arquivo .env se não existir
 RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
-# Ajusta permissões ANTES de rodar comandos do artisan
+# Ajusta permissões
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage \
     && chmod -R 775 /var/www/bootstrap/cache
@@ -53,15 +53,16 @@ RUN chown -R www-data:www-data /var/www \
 # Instala dependências Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Gera a chave da aplicação se não existir
+# Gera a chave da aplicação
 RUN php artisan key:generate --force
 
-# Cacheia config/rotas/views (pode falhar se DB não estiver configurado, então use || true)
-RUN php artisan config:cache || true \
-    && php artisan route:cache || true \
-    && php artisan view:cache || true
+# NÃO CACHE CONFIG AQUI! Apenas route e view
+RUN php artisan route:cache \
+    && php artisan view:cache
 
 EXPOSE 80
 
-# Inicia PHP-FPM e Nginx, redirecionando logs do PHP para stdout
-CMD php-fpm -D && tail -f /var/www/storage/logs/laravel.log & nginx -g 'daemon off;'
+# Script de inicialização que cacheia config DEPOIS das env vars estarem disponíveis
+CMD php artisan config:cache && \
+    php-fpm -D && \
+    nginx -g 'daemon off;'
