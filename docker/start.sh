@@ -21,6 +21,10 @@ php artisan view:clear
 echo "⚡ Caching configurations..."
 php artisan config:cache
 
+chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+
+
 # Debug: Mostra as configurações do banco
 echo "🔍 Database configuration:"
 php artisan tinker --execute="echo 'DB_CONNECTION: ' . config('database.default') . PHP_EOL;"
