@@ -55,6 +55,7 @@ RUN chown -R www-data:www-data /var/www \
 
 # Instala dependências
 RUN composer install --no-dev --optimize-autoloader
+RUN php artisan optimize:clear || true
 
 # Copia o script de inicialização
 COPY docker/start.sh /usr/local/bin/start.sh

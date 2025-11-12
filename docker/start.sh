@@ -30,6 +30,7 @@ echo "🔍 Database configuration:"
 php artisan tinker --execute="echo 'DB_CONNECTION: ' . config('database.default') . PHP_EOL;"
 php artisan tinker --execute="echo 'DB_HOST: ' . config('database.connections.pgsql.host') . PHP_EOL;"
 php artisan tinker --execute="echo 'DB_USERNAME: ' . config('database.connections.pgsql.username') . PHP_EOL;"
+php artisan optimize:clear || true
 
 echo "✅ Application ready!"
 
