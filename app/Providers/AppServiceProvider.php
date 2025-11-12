@@ -21,19 +21,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Log::info('--- Render proxy test ---');
-        Log::info('X-Forwarded-Proto: ' . ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'not set'));
-        Log::info('HTTPS: ' . ($_SERVER['HTTPS'] ?? 'not set'));
-        Log::info('Forwarded: ' . ($_SERVER['HTTP_FORWARDED'] ?? 'not set'));
-
-
-        /* if ($this->app->environment('production')) {
-            $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null;
-            $https = $_SERVER['HTTPS'] ?? null;
-
-            if ($forwardedProto === 'https' || $https === 'on') {
-                URL::forceScheme('https');
-            }
-        } */
+        if ($this->app->environment('production')) {
+            $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'not set';
+            $https = $_SERVER['HTTPS'] ?? 'not set';
+            $forwarded = $_SERVER['HTTP_FORWARDED'] ?? 'not set';
+    
+            // Exibe cabeçalhos diretamente na resposta (apenas para teste)
+            echo "<pre>";
+            echo "X-Forwarded-Proto: {$forwardedProto}\n";
+            echo "HTTPS: {$https}\n";
+            echo "Forwarded: {$forwarded}\n";
+            echo "</pre>";
+            exit;
+        }
     }
 }
