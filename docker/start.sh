@@ -1,17 +1,25 @@
 #!/bin/bash
+set -e
+
+echo "🚀 Starting application..."
 
 # Limpa caches antigos
+echo "🧹 Clearing old caches..."
 php artisan config:clear
 php artisan cache:clear
 
-# Cacheia com as variáveis de ambiente corretas
+# Cacheia configurações com as variáveis de ambiente do Render
+echo "⚡ Caching configurations..."
 php artisan config:cache
-php artisan route:cache
-php artisan view:cache
 
-# Roda migrations (opcional)
+# Opcional: Roda migrations
+# echo "📊 Running migrations..."
 # php artisan migrate --force
 
-# Inicia PHP-FPM e Nginx
+echo "✅ Application ready!"
+
+# Inicia PHP-FPM em background
 php-fpm -D
-nginx -g 'daemon off;'
+
+# Inicia Nginx em foreground
+exec nginx -g 'daemon off;'

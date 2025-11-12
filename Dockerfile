@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y \
         zip \
     && rm -rf /var/lib/apt/lists/*
 
-# Remove TODOS os arquivos de configuração padrão do Nginx
+# Remove configurações padrão do Nginx
 RUN rm -f /etc/nginx/sites-enabled/default \
     && rm -f /etc/nginx/sites-available/default \
     && rm -f /etc/nginx/conf.d/*.conf
@@ -36,33 +36,31 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Copia o default.conf
+# Copia configuração do Nginx
 COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
 # Copia aplicação
 COPY . .
 
-# Cria o arquivo .env se não existir
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
+# Remove o .env local (usar apenas as variáveis do Render)
+RUN rm -f .env
 
 # Ajusta permissões
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage \
     && chmod -R 775 /var/www/bootstrap/cache
 
-# Instala dependências Laravel
+# Instala dependências
 RUN composer install --no-dev --optimize-autoloader
 
-# Gera a chave da aplicação
-RUN php artisan key:generate --force
-
-# NÃO CACHE CONFIG AQUI! Apenas route e view
+# Cache apenas route e view (NÃO config!)
 RUN php artisan route:cache \
     && php artisan view:cache
 
 EXPOSE 80
 
-# Script de inicialização que cacheia config DEPOIS das env vars estarem disponíveis
-CMD php artisan config:cache && \
+# Limpa cache antigo e cacheia config no runtime (quando as env vars estão disponíveis)
+CMD php artisan config:clear && \
+    php artisan config:cache && \
     php-fpm -D && \
     nginx -g 'daemon off;'
