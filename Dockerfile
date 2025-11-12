@@ -1,5 +1,6 @@
 FROM php:8.3-fpm
 
+# Instala dependências do sistema e Nginx
 RUN apt-get update && apt-get install -y \
     nginx \
     git \
@@ -25,17 +26,24 @@ RUN apt-get update && apt-get install -y \
         zip \
     && rm -rf /var/lib/apt/lists/*
 
+# Remove o default.conf padrão do Nginx
+RUN rm -f /etc/nginx/conf.d/default.conf
+
+# Instala Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
+
+# Copia aplicação
 COPY . .
 
+# Instala dependências Laravel e cacheia config/rotas/views
 RUN composer install --no-dev --optimize-autoloader \
     && php artisan config:cache \
     && php artisan route:cache \
     && php artisan view:cache
 
-# Copia config do nginx (o arquivo acima)
+# Copia o default.conf personalizado
 COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
