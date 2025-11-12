@@ -42,8 +42,11 @@ COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 # Copia aplicação
 COPY . .
 
-# Remove o .env local (usar apenas as variáveis do Render)
+# Remove o .env local
 RUN rm -f .env
+
+# Remove TODOS os caches existentes
+RUN rm -rf bootstrap/cache/*.php
 
 # Ajusta permissões
 RUN chown -R www-data:www-data /var/www \
@@ -53,14 +56,19 @@ RUN chown -R www-data:www-data /var/www \
 # Instala dependências
 RUN composer install --no-dev --optimize-autoloader
 
-# Cache apenas route e view (NÃO config!)
-RUN php artisan route:cache \
-    && php artisan view:cache
+# NÃO cache NADA aqui! Deixe tudo para o runtime
+
+# Copia o script de inicialização
+COPY docker/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
 EXPOSE 80
 
-# Limpa cache antigo e cacheia config no runtime (quando as env vars estão disponíveis)
-CMD php artisan config:clear && \
-    php artisan config:cache && \
-    php-fpm -D && \
-    nginx -g 'daemon off;'
+CMD ["/usr/local/bin/start.sh"]
+```
+
+## Se mesmo assim não funcionar, adicione DB_USER também:
+
+No Render.com, adicione mais uma variável de ambiente:
+```
+DB_USER=avnadmin
