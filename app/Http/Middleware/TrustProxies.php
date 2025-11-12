@@ -7,11 +7,15 @@ use Illuminate\Http\Request;
 
 class TrustProxies extends Middleware
 {
-    // Confia em todos os proxies (Render, Cloudflare, etc.)
+    /**
+     * Confia em todos os proxies (Render, Cloudflare, etc.)
+     */
     protected $proxies = '*';
 
-    // Garante que os cabeçalhos corretos sejam interpretados
-    protected $headers =
+    /**
+     * Cabeçalhos que indicam o protocolo real do cliente
+     */
+    protected $headers = 
         Request::HEADER_X_FORWARDED_FOR |
         Request::HEADER_X_FORWARDED_HOST |
         Request::HEADER_X_FORWARDED_PORT |
