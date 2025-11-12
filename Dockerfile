@@ -61,6 +61,6 @@ RUN php artisan optimize:clear || true
 COPY docker/start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-EXPOSE 80
+EXPOSE 10000
 
 CMD ["/usr/local/bin/start.sh"]
