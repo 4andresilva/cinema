@@ -56,8 +56,6 @@ RUN chown -R www-data:www-data /var/www \
 # Instala dependências
 RUN composer install --no-dev --optimize-autoloader
 
-# NÃO cache NADA aqui! Deixe tudo para o runtime
-
 # Copia o script de inicialização
 COPY docker/start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
@@ -65,10 +63,3 @@ RUN chmod +x /usr/local/bin/start.sh
 EXPOSE 80
 
 CMD ["/usr/local/bin/start.sh"]
-```
-
-## Se mesmo assim não funcionar, adicione DB_USER também:
-
-No Render.com, adicione mais uma variável de ambiente:
-```
-DB_USER=avnadmin
